@@ -114,6 +114,6 @@ plots[[i]] <- p # store plot
 }
 
 
-labels <- sapply('p.t.', paste, params, sep=" ")
+labels <- sapply('p.t.', paste, params, sep=" ") # you can change this eg. to 'connectivity', depending on which parameter are you changing
 grid_plot <- ggarrange(plots[[1]],plots[[2]], plots[[3]], plots[[4]], ncol=2, nrow=2, common.legend = TRUE, legend="bottom", labels=labels)
 grid_plot
