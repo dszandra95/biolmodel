@@ -104,17 +104,13 @@ p <-ggplot(data=df) +
   geom_line(mapping=aes(y=susceptible,x=time,color="Susceptible"),size=1) +
   geom_line(mapping=aes(y=infected,x=time,color="Infected"),size=1) +
   geom_line(mapping=aes(y=recovered,x=time,color="Recovered"),size=1) +
-  scale_color_manual(values = c(
-    'Susceptible' = 'blue',
-    'Infected' = 'red',
-    'Recovered' = "green")) +
+  scale_color_manual(values = c('Susceptible' = 'blue','Infected' = 'red','Recovered' = "green")) +
   labs(color = 'Groups') +
   ggtitle(paste("Network epidemic simulation", as.character(i))) +
   theme(plot.title = element_text(hjust = 0.5)) + labs(x = "Time step", y="Number of individuals") +
-  geom_vline(xintercept = max.time, linetype="dotted", 
-                color = "red", size=0.7) +
+  geom_vline(xintercept = max.time, linetype="dotted", color = "red", size=0.7) +
   scale_x_continuous(n.breaks=max(df$time))
-plots[[i]] <- p
+plots[[i]] <- p # store plot
 }
 
 
