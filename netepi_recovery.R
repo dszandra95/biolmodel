@@ -6,7 +6,7 @@ library(ggplot2)
 library(ggpubr)
 
 
-generate.network.B <- function(N,links.per.step){
+generate.network.B <- function(N,links.per.step){ # generates Barabási-Albert graph
   L <- matrix(nrow=0,ncol=2) # initialize matrix with zero rows
   deg <- integer(N) # initialize vector for degrees of the nodes
   for (i in 2:N) { # note that we start assigning edges from the second node only
@@ -61,7 +61,7 @@ while (length(infected[infected == 1]) > 0) { # run simulation until all nodes b
   previous.inf.nodes <- total.infected.nodes
   
   if (length(new.inf.nodes) > 0){infection.df[new.inf.nodes, 2] <- time}} # store the infection time of new infected nodes
-  infected[nodes.of.transmitter.links] <- 1 # here I simply set both nodes to TRUE (although the transmitter already had 'TRUE'). In more complex models, you might want to do a further check here and overwrite only the newly infected nodes.
+  infected[nodes.of.transmitter.links] <- 1 # here I simply set both nodes to 1 (although the transmitter already had 1). In more complex models, you might want to do a further check here and overwrite only the newly infected nodes.
   max.recover <- time-recovery.time # minimal time after infection, that is needed to recover (minimal length of the disease)
   potential.recovers <- as.vector(infection.df[infection.df$time <= max.recover,]$node)
   if (max.recover >= 0){
