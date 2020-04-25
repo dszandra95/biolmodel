@@ -9,4 +9,4 @@ Luca_epimodel_agegroup:
   
 netepi_recovery (Benedek):
   - Recovery added to the basic epidemic network model: at each time step recovered individuals are chosen based on               recovery.time and rec.prob parameters. Recovery time indicates the required minimal elapsed time to recover. 
-  - Group info in each time step is stored in dataframe (recovered, infected, susceptible groups).
+  - Group info in each time step is stored in a dataframe (recovered, infected, susceptible groups).
