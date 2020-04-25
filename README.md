@@ -1,5 +1,6 @@
 # biolmodel
-Computer modeling in biology course 2019/2020/2
+## Computer modeling in biology course 2019/2020/2
+https://tb.ethz.ch/education/learningmaterials/modelingcourse/level-2-modules/network.html
 <br/><br/>
 
 Luca_epimodel_agegroup:
