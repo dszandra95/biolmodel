@@ -47,6 +47,11 @@ time=0 # time step
 
 while (length(infected[infected == 1]) > 0) { # run simulation until all nodes become recovered
   inf <- as.logical(infected)
+  # rewire network:
+  graph <- graph_from_edgelist(links, directed = F) # create igraph graph object
+  graph_rewired <- rewire(graph, keeping_degseq(niter = 20, loops=F)) # rewire - keep node degrees the same
+  links <- as_edgelist(graph_rewired)
+  
   discordant.links <- which(xor(inf[links[,1]],inf[links[,2]])) # find the indeces of links that connect an infected individual to an uninfected
   transmit <- rbinom(length(discordant.links),1,p.t) # determine randomly which of the discordant links transmit the disease
   transmitter.links <- discordant.links[transmit==1]
