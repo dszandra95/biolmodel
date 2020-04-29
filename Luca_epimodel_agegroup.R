@@ -91,25 +91,47 @@ if (plot.spread) {
   plot(network.i,layout=fixlayout, main="Time = 0", vertex.color=node.colour)
 }
 
+# Define transmission probability based on age group for all connections based on transmitter
+# Index of value in vector will correspond to row of interaction in links
+transm_prob_vector = c()
+for (n in 1:nrow(links)){
+  if (metadata[links[n,][1], 2] == 'child'){
+    transm_prob_vector[n] <- 0.6
+  }
+  else{
+    transm_prob_vector[n] <- 0.2
+  }
+}
+
+
 for (i in 1:simlength) {
   discordant.links <- which(xor(infected[links[,1]],infected[links[,2]])) # find the indeces of links that connect an infected individual to an uninfected
-  # Change the probalility of getting infected based on age group
-  # Children transmit the disease more easily
-  if (metadata[discordant.links[1],2] == 'child'){
-    p.t = 0.8
+  
+  # Determine which links of infected individual (discordant links) will transmit the disease
+  # Define counter to follow index of does_transmit vector
+  # Does_transmit: same dimension as links, 1 if will get infected, 0 if not
+  counter <- 1
+  tarnsmit <- c()
+  
+  for (conn in discordant.links){
+    # generate random number between 1 and 0
+    r <- runif(1)
+    # If random number is smaller than transmitting probability, the link will be infectious
+    # Transmitting probability is defined based on the transmitter's age group (see above)
+    if (r < transm_prob_vector[conn]){
+      transmit[counter] <- 1
+      counter <- counter + 1
+    }
+    else{
+      transmit[counter] <- 0
+      counter <- counter + 1
+    }
   }
-  else if (metadata[discordant.links[1],2] == 'adult'){
-    p.t = 0.4
-  }
-  else if (metadata[discordant.links[1],2] == 'elderly'){
-    p.t = 0.2
-  }
-  transmit <- rbinom(length(discordant.links),1,p.t) # determine randomly which of the discordant links transmit the disease
-
+  
+  #transmit <- rbinom(length(discordant.links),1,p.t) # determine randomly which of the discordant links transmit the disease
   # let me update the infection vector in three steps to make it easier to read:
   transmitter.links <- discordant.links[transmit==1]
   nodes.of.transmitter.links <- unique(as.vector(links[transmitter.links,1:2])) # gets both nodes of the transmitter links into a single vector; unique just filters out repetitions
-  print(nodes.of.transmitter.links)
   infected[nodes.of.transmitter.links] <- TRUE # here I simply set both nodes to TRUE (although the transmitter already had 'TRUE'). In more complex models, you might want to do a further check here and overwrite only the newly infected nodes.
   if (plot.spread) {
     node.colour[infected] <- "red"
