@@ -26,68 +26,82 @@ generate.network.B <- function(N,links.per.step){ # generates Barabási-Albert g
 
 # MAIN FUNCTION:
 
-# Network epidemics model with recovery
+# Network epidemics model with recovery, link rewireing dynamcis (but keep node degrees)
 
 # parameters:
-# N = number of nodes, p.t. = probability of transmission, recovery.time = minimal time needed for recovery, rec.prob = probability of recovery (for rbinom function)
+# N = number of nodes, p.t. = probability of transmission, recovery.time = minimal time needed for recovery, 
+#     rec.prob = probability of recovery (for rbinom function), plot.spred = plotting netowork
 
-pandemic.simulation <- function(N, p.t, connectivity, recovery.time, rec.prob){
-
+pandemic.simulation <- function(N, p.t, connectivity, recovery.time, rec.prob, plot.spread){
   
-infected <- numeric(N) # initialize infection status, 0: susceptible, 1: infected, 2: recovered
-patientzero <- sample(N,1) # select 'patient zero'
-infected[patientzero] <- 1
-links <- generate.network.B(N,connectivity)
-
-populations.df <- data.frame(time=integer(), susceptible=integer(), infected=integer(), recovered=integer()) # stores the group numbers per time step
-
-infection.df <- data.frame(node=c(1:N), time=rep(Inf,N)) # to store the infection time of all nodes
-infection.df[patientzero,2] <- 0
-previous.inf.nodes <- c()
-
-time=0 # time step
-
-while (length(infected[infected == 1]) > 0) { # run simulation until all nodes become recovered
-  inf <- as.logical(infected)
-  # rewire network:
-  graph <- graph_from_edgelist(links, directed = F) # create igraph graph object
-  graph_rewired <- rewire(graph, keeping_degseq(niter = 20, loops=F)) # rewire - keep node degrees the same
-  links <- as_edgelist(graph_rewired)
   
-  discordant.links <- which(xor(inf[links[,1]],inf[links[,2]])) # find the indeces of links that connect an infected individual to an uninfected
-  transmit <- rbinom(length(discordant.links),1,p.t) # determine randomly which of the discordant links transmit the disease
-  transmitter.links <- discordant.links[transmit==1]
+  infected <- numeric(N) # initialize infection status, 0: susceptible, 1: infected, 2: recovered
+  patientzero <- sample(N,1) # select 'patient zero'
+  infected[patientzero] <- 1 # first infected node
+  links <- generate.network.B(N,connectivity)
   
-  total.infected.nodes <- which(infected %in% 1) # get all infected nodes
-  recovered.nodes <- which(infected %in% 2) # all recovered nodes
+  populations.df <- data.frame(time=integer(), susceptible=integer(), infected=integer(), recovered=integer()) # stores the group numbers per time step
   
-  nodes.of.transmitter.links <- unique(as.vector(links[transmitter.links,1:2])) # gets both nodes of the transmitter links into a single vector; unique just filters out repetitions
-  nodes.of.transmitter.links <- nodes.of.transmitter.links[!nodes.of.transmitter.links %in% recovered.nodes] # to avoid infecting recovered nodes
+  infection.df <- data.frame(node=c(1:N), time=rep(Inf,N)) # to monitor the infection time of all nodes
+  infection.df[patientzero,2] <- 0 # time 0: infection time of first infected node
   
-  if (length(as.vector(nodes.of.transmitter.links)) >= 0) {new.inf.nodes <- setdiff(total.infected.nodes, previous.inf.nodes) # get new infected nodes
-  previous.inf.nodes <- total.infected.nodes
+  if (plot.spread) {
+    network.i <- graph.edgelist(links,directed=FALSE)
+    fixlayout <- layout.kamada.kawai(network.i)  # store a fixed layout for the graph
+    node.colour <- rep("SkyBlue2",N) # initialize node colours (SkyBlue2 is also the default node colour in igraph)
+    node.colour[patientzero] <- "red" # infected nodes will be coloured red
+    plot(network.i,layout=fixlayout, main="Time = 0", vertex.color=node.colour)
+  }
   
-  if (length(new.inf.nodes) > 0){infection.df[new.inf.nodes, 2] <- time}} # store the infection time of new infected nodes
-  infected[nodes.of.transmitter.links] <- 1 # here I simply set both nodes to 1 (although the transmitter already had 1). In more complex models, you might want to do a further check here and overwrite only the newly infected nodes.
-  max.recover <- time-recovery.time # minimal time after infection, that is needed to recover (minimal length of the disease)
-  potential.recovers <- as.vector(infection.df[infection.df$time <= max.recover,]$node)
-  if (max.recover >= 0){
-    recovered.nodes <- rbinom(length(potential.recovers), 1, rec.prob)
-    recovered.nodes <- potential.recovers[recovered.nodes == 1]
-    infected[recovered.nodes] <- 2} # recovered nodes
+  previous.inf.nodes <- c() # stores the last time step's infected nodes
   
-  time = time + 1
-  current.df <- data.frame(time, length(infected[infected == 0]), length(infected[infected == 1]), length(infected[infected == 2]))
-  names(current.df) <- c("time", "susceptible", "infected", "recovered")  
-  populations.df <- rbind(populations.df, current.df)
+  time=0 # time step
+  while (length(infected[infected == 1]) > 0) { # run simulation until all nodes become recovered
+    inf <- as.logical(infected)
+    
+    # rewire network:
+    graph <- graph_from_edgelist(links, directed = F) # create igraph graph object
+    graph_rewired <- rewire(graph, keeping_degseq(niter = 20, loops=F)) # rewire - keep node degrees the same (and no self loops)
+    links <- as_edgelist(graph_rewired) 
+    network.i <- graph.edgelist(links, directed=FALSE)
+    
+    discordant.links <- which(xor(inf[links[,1]],inf[links[,2]])) # find the indeces of links that connect an infected individual to an uninfected
+    transmit <- rbinom(length(discordant.links),1,p.t) # determine randomly which of the discordant links transmit the disease
+    transmitter.links <- discordant.links[transmit==1]
+    
+    total.infected.nodes <- which(infected %in% 1) # get all infected nodes
+    recovered.nodes <- which(infected %in% 2) # all recovered nodes
+    
+    nodes.of.transmitter.links <- unique(as.vector(links[transmitter.links,1:2])) # gets both nodes of the transmitter links into a single vector; unique just filters out repetitions
+    nodes.of.transmitter.links <- nodes.of.transmitter.links[!nodes.of.transmitter.links %in% recovered.nodes] # to avoid infecting recovered nodes
+    
+    if (length(as.vector(nodes.of.transmitter.links)) >= 0) {new.inf.nodes <- setdiff(total.infected.nodes, previous.inf.nodes) # get new infected nodes
+    previous.inf.nodes <- total.infected.nodes
+    
+    if (length(new.inf.nodes) > 0){infection.df[new.inf.nodes, 2] <- time}} # store the infection time of new infected nodes
+    infected[nodes.of.transmitter.links] <- 1 # here I simply set both nodes to TRUE (although the transmitter already had 'TRUE'). In more complex models, you might want to do a further check here and overwrite only the newly infected nodes.
+    max.recover <- time-recovery.time # minimal time after infection, that is needed to recover (minimal length of the disease)
+    potential.recovers <- as.vector(infection.df[infection.df$time <= max.recover,]$node)
+    if (max.recover >= 0){
+      recovered.nodes <- rbinom(length(potential.recovers), 1, rec.prob)
+      recovered.nodes <- potential.recovers[recovered.nodes == 1]
+      infected[recovered.nodes] <- 2} # recovered nodes
+    
+    time = time + 1
+    
+    if (plot.spread) {
+      node.colour[infected == 1] <- "red"
+      node.colour[infected == 2] <- "green"
+      plot(network.i,layout=fixlayout, main=paste("Time =", time), vertex.color=node.colour)
+    } 
+    current.df <- data.frame(time, length(infected[infected == 0]), length(infected[infected == 1]), length(infected[infected == 2]))
+    names(current.df) <- c("time", "susceptible", "infected", "recovered")  
+    populations.df <- rbind(populations.df, current.df) # add new data to data frame
+  }
+  return (time) # returns total time needed to become all nodes recovered after infection
 }
-
-
-return (populations.df) # susceptible, infected, recovered states in time
-}
-
 #test:
-#pandemic.simulation(100, 0.2, 3, 3, 0.4)
+#pandemic.simulation(100, 0.2, 3, 3, 0.4, TRUE)
 
 #############################################################################
 
@@ -98,7 +112,7 @@ params <- c(0.2, 0.4, 0.6, 0.8) # p.t. parameters
 
 
 for (i in 1:4) {
-  sim <- pandemic.simulation(1000, params[i], 4, 3, 0.4)
+  sim <- pandemic.simulation(1000, params[i], 4, 3, 0.4, F)
   simulations[[i]] <- sim  # create and add new data frame
   }
 
