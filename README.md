@@ -1,5 +1,5 @@
-# biolmodel
-## Computer modeling in biology course 2019/2020/2
+<center> <h1> Network models of epidemics </h1> </center>
+<center> <h2> Computer modeling in biology course 2019/2020/2 </h2> </center>
 https://tb.ethz.ch/education/learningmaterials/modelingcourse/level-2-modules/network.html
 <br/><br/>
 
