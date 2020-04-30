@@ -15,8 +15,7 @@ netepi_recovery (Benedek):
   <br/>
   
   netepi_recovery_boxplots (Benedek): <br/>
-  - Almost the same as netepi.recovery.
-<img src="images/boxplot.png" width=400 >
+  - Almost the same as netepi.recovery, boxplot added.
 
 
     
