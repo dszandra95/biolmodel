@@ -26,7 +26,9 @@ generate.network.B <- function(N,links.per.step){ # generates Barabási-Albert g
 
 # MAIN FUNCTION:
 
-# network epidemics model with recovery
+# Network epidemics model with recovery
+
+# parameters:
 # N = number of nodes, p.t. = probability of transmission, recovery.time = minimal time needed for recovery, rec.prob = probability of recovery (for rbinom function)
 
 pandemic.simulation <- function(N, p.t, connectivity, recovery.time, rec.prob){
@@ -87,9 +89,9 @@ return (populations.df) # susceptible, infected, recovered states in time
 #test:
 #pandemic.simulation(100, 0.2, 3, 3, 0.4)
 
-#########################################
+#############################################################################
 
-### Plot simulations in 2x2 grid
+### Plot simulations in time, 2x2 grid
 
 simulations <- list()
 params <- c(0.2, 0.4, 0.6, 0.8) # p.t. parameters
