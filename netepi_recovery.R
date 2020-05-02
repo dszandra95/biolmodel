@@ -138,3 +138,25 @@ plots[[i]] <- p # store plot
 labels <- sapply('p.t.', paste, params, sep=" ") # you can change this eg. to 'connectivity', depending on which parameter are you changing
 grid_plot <- ggarrange(plots[[1]],plots[[2]], plots[[3]], plots[[4]], ncol=2, nrow=2, common.legend = TRUE, legend="bottom", labels=labels)
 grid_plot
+
+
+#### Simulations, and histogram of epidemics duration ####
+
+sim.num <- 1000 # number of simulations
+results <- numeric(sim.num)
+
+# run simulations:
+for (i in (1:sim.num)){ 
+  simulation <- pandemic.simulation(100, 0.3, 4, 0, 0.3, plot.spread=F) # set parameters
+  results[i] <- simulation
+}
+
+df <- data.frame(res=results) # store data in data frame
+
+# histogram with density plot:
+ggplot(df, aes(x=res)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="green", binwidth = 1)+
+  geom_density(alpha=.3, fill="#FF6666") +
+  ggtitle("Epidemic simulation duration") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Time steps") + ylab("Frequency")
