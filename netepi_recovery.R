@@ -103,7 +103,7 @@ pandemic.simulation <- function(N, p.t, connectivity, recovery.time, rec.prob, p
 #test:
 #pandemic.simulation(100, 0.2, 3, 3, 0.4, TRUE)
 
-#############################################################################
+##################################### PLOTS ########################################
 
 ### Plot simulations in time, 2x2 grid
 
@@ -138,6 +138,45 @@ plots[[i]] <- p # store plot
 labels <- sapply('p.t.', paste, params, sep=" ") # you can change this eg. to 'connectivity', depending on which parameter are you changing
 grid_plot <- ggarrange(plots[[1]],plots[[2]], plots[[3]], plots[[4]], ncol=2, nrow=2, common.legend = TRUE, legend="bottom", labels=labels)
 grid_plot
+
+
+#### Boxplots #####
+# run many simulations with different parameters, and then plot the simulation results per group
+
+params <- c(0, 2, 4, 6, 8, 10) # different recovery time parameters
+repetitions <- 50 # repeat each simulation 50 times
+
+df <- data.frame('1'=numeric(repetitions), '2'=numeric(repetitions), '3'=numeric(repetitions), # initialize empty data frame
+                 '4'=numeric(repetitions), '5'=numeric(repetitions), '6'=numeric(repetitions))
+
+
+for (i in (1:length(params))){ # run simulations and fill up data frame
+values <- numeric(repetitions)
+for (rep in (1:repetitions)){
+values[rep] <- pandemic.simulation(50, 0.2, 3, params[i], 0.4) # set parameters
+}
+df[paste0("X", i)] <- values
+}
+
+# transform dataframe for boxplots:
+s_df <- stack(df)
+s_df <- transform(s_df, group = substring(ind, 1, 1),
+                             obs = substring(ind, 2))
+
+# plot the result:
+plt <- ggplot(s_df, aes(x = ind, y = values)) +
+  stat_boxplot(geom ='errorbar', width = 0.6) +
+  geom_boxplot() +
+  stat_summary(fun = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..),
+               width = .75, linetype = "dashed") + 
+  ggtitle("Time steps needed to become all nodes\n recovered after infection") +
+  xlab("Min. recovery time") + ylab("Time step") +
+  scale_x_discrete(labels=c("X1" = "0", "X2" = "2",
+                            "X3" = "4", "X4" = "6", 
+                            "X5" = "8", "X6"="10")) +
+  theme(axis.text=element_text(size=15), axis.title=element_text(size=15), 
+        plot.title = element_text(size=16, hjust = 0.5))
+plt # boxplots with increasing recovery time parameter
 
 
 #### Simulations, and histogram of epidemics duration ####
