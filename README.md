@@ -11,11 +11,7 @@ Luca_epimodel_agegroup:
   
 netepi_recovery (Benedek):
   - Recovery added to the basic epidemic network model: at each time step recovered individuals are chosen based on               recovery.time and rec.prob parameters. Recovery time indicates the required minimal elapsed time to recover. 
+  - Network dynamics: swapping edges in each time step, keep node degree the same. 
   - Group info in each time step is stored in a dataframe (recovered, infected, susceptible groups).
+  - Plots: epidemic line plot of change of groups (S, I, R) in time; boxplot of repeated epidemic simulation durations; histogram of the distribution of epidemic simulations
   <br/>
-  
-  netepi_recovery_boxplots (Benedek): <br/>
-  - Almost the same as netepi.recovery, boxplot added.
-
-
-    
