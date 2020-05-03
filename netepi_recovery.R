@@ -153,7 +153,7 @@ df <- data.frame('1'=numeric(repetitions), '2'=numeric(repetitions), '3'=numeric
 for (i in (1:length(params))){ # run simulations and fill up data frame
 values <- numeric(repetitions)
 for (rep in (1:repetitions)){
-values[rep] <- pandemic.simulation(50, 0.2, 3, params[i], 0.4) # set parameters
+values[rep] <- pandemic.simulation(50, 0.2, 3, params[i], 0.4, FALSE) # set parameters
 }
 df[paste0("X", i)] <- values
 }
