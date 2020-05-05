@@ -22,6 +22,15 @@ generate.network.B <- function(N,links.per.step){ # generates Barabási-Albert g
 }
 
 
+# Removes p proportion of existing links:
+remove.edges <- function(portion, links){
+  l <- length(links[,1])
+  remove <- sample(1:l, round(l*portion))
+  links <- links[-as.vector(remove),]
+  return (links)
+}
+
+
 ################
 
 # MAIN FUNCTION:
@@ -30,15 +39,19 @@ generate.network.B <- function(N,links.per.step){ # generates Barabási-Albert g
 
 # parameters:
 # N = number of nodes, p.t. = probability of transmission, recovery.time = minimal time needed for recovery, 
-#     rec.prob = probability of recovery (for rbinom function), plot.spred = plotting netowork
+# rec.prob = probability of recovery (for rbinom function), plot.spred = plotting netowork
+# remove_edges = FALSE/TRUE, remove.prop = proportion of existing links to remove
 
-pandemic.simulation <- function(N, p.t, connectivity, recovery.time, rec.prob, plot.spread){
+pandemic.simulation <- function(N, p.t, connectivity, recovery.time, 
+                                rec.prob, plot.spread, remove_edges, remove.prop){
   
   
   infected <- numeric(N) # initialize infection status, 0: susceptible, 1: infected, 2: recovered
   patientzero <- sample(N,1) # select 'patient zero'
   infected[patientzero] <- 1 # first infected node
   links <- generate.network.B(N,connectivity)
+  
+  if (remove_edges){links <- remove.edges(links=links, remove.prop)}
   
   populations.df <- data.frame(time=integer(), susceptible=integer(), infected=integer(), recovered=integer()) # stores the group numbers per time step
   
