@@ -4,6 +4,7 @@
 library(igraph)
 library(ggplot2)
 library(ggpubr)
+library(gridExtra)
 
 
 generate.network.B <- function(N,links.per.step){ # generates Barabási-Albert graph
