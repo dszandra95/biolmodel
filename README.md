@@ -7,6 +7,8 @@ Luca_epimodel_agegroup:
   - Add metadata dataframe for each individual specifying age group and sex based on demography data
   - Set up network so that connections within age groups is more likely than outside age groups
   - Make children transmit the disease with a higher probability
+  - Plots number of infected people at each time point (**would it be better to plot the newly infected at each timepoint?**) while changeing the percentage of age groups in the population
+    - As the children transmit the disease with bigger probability I would expect the higher children percentage populations to have a steeper curve (also it would rise earlier on)
   <br/>
   
 netepi_recovery (Benedek):
