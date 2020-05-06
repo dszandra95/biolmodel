@@ -51,7 +51,8 @@ pandemic.simulation <- function(N, p.t, connectivity, recovery.time,
   infected[patientzero] <- 1 # first infected node
   links <- generate.network.B(N,connectivity)
   
-  if (remove_edges){links <- remove.edges(links=links, remove.prop)}
+  if (remove_edges & (length(infected[infected==0]) <= round(length(infected)/2))) # remove edges only if susceptible group 
+      {links <- remove.edges(links=links, remove.prop)}                            # is 50% or less of total nodes
   
   populations.df <- data.frame(time=integer(), susceptible=integer(), infected=integer(), recovered=integer()) # stores the group numbers per time step
   
