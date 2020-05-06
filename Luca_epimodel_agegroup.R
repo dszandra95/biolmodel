@@ -1,4 +1,6 @@
-library(igraph) 
+library(igraph)
+library(lsa)
+plots <- c()
 # generate.network.B <- function(N, links.per.step)
 # Use: generates a random network by adding nodes one by one and linking the new nodes to old ones such that old nodes with more existing links
 #      are more likely to receive the new links (preferential attachment). This is simple example of a Barabási random graph.
@@ -16,7 +18,7 @@ define_metadata <- function(N){
     # Define sex 
     node_sex <- sample(c('F', 'M'), size = 1, prob = c(0.5, 0.5))
     # Define age group
-    node_age <- sample(c('child', 'adult', 'elderly'), size = 1, prob = c(0.24, 0.631, 0.13))
+    node_age <- sample(c('child', 'adult', 'elderly'), size = 1, prob = c(0.24, 0.63, 0.13))
     L[i, 1] <- i
     L[i, 2] <- node_age
     L[i, 3] <- node_sex
@@ -59,8 +61,8 @@ generate.network.B <- function(N,links.per.step){
 
 # Simulate epidemics with barabasi graph
 
-N = 50 # number of individuals
-simlength <- 100 # number of time steps
+N = 200 # number of individuals
+simlength <- 30 # number of time steps
 
 plot.spread <- TRUE # switch to set whether you would like to plot the spreading of the epidemic over the network (slows down the simulation when TRUE)
 
@@ -96,50 +98,64 @@ if (plot.spread) {
 transm_prob_vector = c()
 for (n in 1:nrow(links)){
   if (metadata[links[n,][1], 2] == 'child'){
-    transm_prob_vector[n] <- 0.6
+    transm_prob_vector[n] <- 0.8
   }
   else{
     transm_prob_vector[n] <- 0.2
   }
 }
 
+color_vector <- c('orange', 'blue', 'red', 'green', 'purple', 'pink', 'yellow')
 
-for (i in 1:simlength) {
-  discordant.links <- which(xor(infected[links[,1]],infected[links[,2]])) # find the indeces of links that connect an infected individual to an uninfected
+for (nn in 1:1){
+  time <- c()
+  num_infected <- c()
   
-  # Determine which links of infected individual (discordant links) will transmit the disease
-  # Define counter to follow index of does_transmit vector
-  # Does_transmit: same dimension as links, 1 if will get infected, 0 if not
-  counter <- 1
-  tarnsmit <- c()
+  links <- generate.network.B(N,2) # generate an edge list for a Barabási graph
+  infected <- logical(N) # initialize infection status
+  patientzero <- sample(N,1) # select 'patient zero'
   
-  for (conn in discordant.links){
-    # generate random number between 1 and 0
-    r <- runif(1)
-    # If random number is smaller than transmitting probability, the link will be infectious
-    # Transmitting probability is defined based on the transmitter's age group (see above)
-    if (r < transm_prob_vector[conn]){
-      transmit[counter] <- 1
-      counter <- counter + 1
+  infected[patientzero] <- TRUE
+  for (i in 1:simlength) {
+    discordant.links <- which(xor(infected[links[,1]],infected[links[,2]])) # find the indeces of links that connect an infected individual to an uninfected
+    
+    # Determine which links of infected individual (discordant links) will transmit the disease
+    # Define counter to follow index of does_transmit vector
+    # Does_transmit: same dimension as links, 1 if will get infected, 0 if not
+    counter <- 1
+    tarnsmit <- c()
+    
+    for (conn in discordant.links){
+      # generate random number between 1 and 0
+      r <- runif(1)
+      # If random number is smaller than transmitting probability, the link will be infectious
+      # Transmitting probability is defined based on the transmitter's age group (see above)
+      if (r < transm_prob_vector[conn]){
+        transmit[counter] <- 1
+        counter <- counter + 1
+      }
+      else{
+        transmit[counter] <- 0
+        counter <- counter + 1
+      }
     }
-    else{
-      transmit[counter] <- 0
-      counter <- counter + 1
-    }
+    
+    # let me update the infection vector in three steps to make it easier to read:
+    transmitter.links <- discordant.links[transmit==1]
+    nodes.of.transmitter.links <- unique(as.vector(links[transmitter.links,1:2])) # gets both nodes of the transmitter links into a single vector; unique just filters out repetitions
+    infected[nodes.of.transmitter.links] <- TRUE # here I simply set both nodes to TRUE (although the transmitter already had 'TRUE'). In more complex models, you might want to do a further check here and overwrite only the newly infected nodes.
+    
+    num_infected[i] <- sum(infected, na.rm = TRUE)
+    time[i] <- i
+  
   }
   
-  #transmit <- rbinom(length(discordant.links),1,p.t) # determine randomly which of the discordant links transmit the disease
-  # let me update the infection vector in three steps to make it easier to read:
-  transmitter.links <- discordant.links[transmit==1]
-  nodes.of.transmitter.links <- unique(as.vector(links[transmitter.links,1:2])) # gets both nodes of the transmitter links into a single vector; unique just filters out repetitions
-  infected[nodes.of.transmitter.links] <- TRUE # here I simply set both nodes to TRUE (although the transmitter already had 'TRUE'). In more complex models, you might want to do a further check here and overwrite only the newly infected nodes.
-  if (plot.spread) {
-    node.colour[infected] <- "red"
-    #readline() # waits for the user to press <ENTER> before proceeding; you need to switch to the console to do this
-    plot(network.i,layout=fixlayout, main=paste("Time =", i), vertex.color=node.colour)
+  if (nn == 1){
+    plot(time, num_infected, type = 'b', pch=16, col = color_vector[nn], main=' Same probs: 33% child') 
   }
-  
+  else{
+    lines(time, num_infected, type = 'b', pch=16, col = color_vector[nn])
+  }
 }
 
-# Count number of infected people
-sum(infected, na.rm = TRUE)
+
