@@ -9,6 +9,7 @@ Luca_epimodel_agegroup:
   - Make children transmit the disease with a higher probability
   - Plots number of infected people at each time point (**would it be better to plot the newly infected at each timepoint?**) while changeing the percentage of age groups in the population
     - As the children transmit the disease with bigger probability I would expect the higher children percentage populations to have a steeper curve (also it would rise earlier on)
+    - **However from the current figures I can only see the shift on x axis and not in steepness**
   <br/>
   
 netepi_recovery (Benedek):
